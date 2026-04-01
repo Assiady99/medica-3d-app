@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medica 3D — منصة التعلم التشريحي</title>
+    <meta name="description" content="استكشف جسم الإنسان بتقنية ثلاثية الأبعاد وواقع معزز">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- Targeted Results HUD -->
+    <div id="selectionModal" class="selection-overlay hidden">
+        <div class="selection-container">
+            <div class="selection-header">
+                <div class="selection-title">نتائج البحث [TARGETS_FOUND]</div>
+                <button id="cancelSelection" class="cancel-selection-btn">إلغاء البحث</button>
+            </div>
+            <div id="candidatesGrid" class="candidates-grid">
+                <!-- Data injected by app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Animated Background -->
+    <div class="bg-animated">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <!-- Floating Medical 3D Models Canvas -->
+        <canvas id="floating-models"></canvas>
+        <nav class="navbar fade-in">
+            <div class="logo">
+                <span class="logo-text">MEDICA <span class="logo-accent">3D</span></span>
+            </div>
+        </nav>
+
+        <div class="hero-content"><br><br>
+            <h1 class="hero-title slide-up" style="animation-delay: 0.2s;">استكشف العالم بالأبعاد الثلاثية</h1>
+            <p class="hero-subtitle slide-up" style="animation-delay: 0.3s;">اكتشف تفاصيل التشريح، الكائنات، والآلات عبر تقنية الواقع المعزز والمجسمات التفاعلية فائقة الدقة.</p>
+            
+            <div class="search-container slide-up" style="animation-delay: 0.4s;">
+                <div class="search-box" id="searchBox">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    </div>
+                    <div id="categoryDropdown" class="custom-dropdown">
+                        <div class="dropdown-selected">
+                            <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 6h18M7 12h10M10 18h4"/>
+                                <circle cx="12" cy="12" r="10" opacity="0.1"/>
+                            </svg>
+                            <span>التصنيف</span>
+                        </div>
+                        <div class="dropdown-options hidden">
+                            <div class="dropdown-option selected" data-value="medical_anatomy">
+                                <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M12 18h6v2h-6v-2zm-5-4v2h2v-2H7zm0-4v2h2v-2H7zm0-4v2h2V6H7zm11 0h2v10h-2V6zM5 4h14v16H5V4z" opacity="0.3"/>
+                                    <path d="M12 5v13M10 4h4M12 18l-3 3h6l-3-3"/>
+                                    <path d="M16 10l3 3-3 3" opacity="0.6"/>
+                                </svg>
+                                <span>تشريح طبي</span>
+                            </div>
+                            <div class="dropdown-option" data-value="animals_nature">
+                                <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" opacity="0.2"/>
+                                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke-dasharray="2 2"/>
+                                    <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
+                                    <path d="M12 3v2M12 19v2M3 12h2M19 12h2" opacity="0.5"/>
+                                </svg>
+                                <span>حيوانات وطبيعة</span>
+                            </div>
+                            <div class="dropdown-option" data-value="vehicles">
+                                <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-1.1 0-2 .9-2 2v5c0 .6.4 1 1 1h2"/>
+                                    <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+                                    <path d="M5 10l2-3h5l2 3" opacity="0.4"/>
+                                </svg>
+                                <span>مركبات وسيارات</span>
+                            </div>
+                            <div class="dropdown-option" data-value="architecture">
+                                <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M3 21h18M5 21V7l7-4 7 4v14M8 21v-4a2 2 0 1 1 4 0v4M13 21v-7a1 1 0 1 1 2 0v7M9 9h6"/>
+                                    <path d="M6 10h2M6 14h2M16 10h2M16 14h2" opacity="0.5"/>
+                                </svg>
+                                <span>هندسة وعمارة</span>
+                            </div>
+                            <div class="dropdown-option" data-value="general">
+                                <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" opacity="0.5"/>
+                                    <path d="M2 12h20" opacity="0.5"/>
+                                    <path d="M12 2v20M2 12a15.3 15.3 0 0 1 10-4 15.3 15.3 0 0 1 10 4" opacity="0.3"/>
+                                </svg>
+                                <span>عام (أي شيء)</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="categorySelect" value="medical_anatomy">
+                    </div>
+                    <input 
+                        type="text" 
+                        id="promptInput" 
+                        placeholder="مثال: قلب، دماغ، عين، رئة، كلية..." 
+                        class="search-input"
+                        autocomplete="off"
+                    >
+                    <button id="generateBtn" class="search-btn">
+                        <span class="btn-text">استكشف</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+                <!-- Quick organ tags -->
+                <div class="quick-tags" style="animation-delay: 0.5s;">
+                    <span class="tag-label">مقترحات شائعة:</span>
+                    <button class="quick-tag" onclick="quickSearch('قلب')">
+                        <svg class="hud-icon heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <!-- Anatomical Heart with Vessels -->
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            <path d="M12 5v4M10 4v2M14 4v2M12 3c-1 0-2 1-2 2M14 3c1 0 2 1 2 2" stroke-width="1"/>
+                            <path d="M9 13c.5-1 1.5-1.5 3-1.5s2.5.5 3 1.5" opacity="0.5"/>
+                        </svg>
+                        قلب
+                    </button>
+                    <button class="quick-tag" onclick="quickSearch('دماغ')">
+                        <svg class="hud-icon brain-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <!-- Detailed Brain with Lobes -->
+                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" opacity="0.2"/>
+                            <path d="M12 4c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8z"/>
+                            <path d="M12 4v16M4 12h16" stroke-width="0.5" opacity="0.3"/>
+                            <path d="M12 7c-2 0-3 1-3 3s1 3 3 3 3-1 3-3-1-3-3-3z"/>
+                            <path d="M7 12c0-2 1-3 3-3M17 12c0-2-1-3-3-3M12 17c-2 0-3-1-3-3M12 17c2 0 3-1 3-3" opacity="0.6"/>
+                        </svg>
+                        دماغ
+                    </button>
+                    <button class="quick-tag" onclick="quickSearch('هيكل عظمي')">
+                        <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <!-- Anatomical Skull -->
+                            <path d="M12 4c-4.418 0-8 3.582-8 8 0 2.21.9 4.21 2.34 5.66L7 20h10l.66-2.34C19.1 16.21 20 14.21 20 12c0-4.418-3.582-8-8-8z"/>
+                            <path d="M9 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" fill="currentColor" fill-opacity="0.2"/>
+                            <path d="M10 16h4M12 14v2" stroke-width="1"/>
+                            <path d="M8 20v2M10 20v2M12 20v2M14 20v2M16 20v2" stroke-width="1"/>
+                        </svg>
+                        هيكل عظمي
+                    </button>
+                    <button class="quick-tag" onclick="quickSearch('خلية')">
+                        <svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <!-- Detailed DNA Double Helix -->
+                            <path d="M8 3c0 4.418 8 4.418 8 8s-8 3.582-8 8"/><path d="M16 3c0 4.418-8 4.418-8 8s8 3.582 8 8"/>
+                            <path d="M8 6h8M8 10h8M8 14h8M8 18h8" stroke-width="1" opacity="0.5"/>
+                            <circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="16" cy="3" r="1.5" fill="currentColor"/>
+                            <circle cx="16" cy="11" r="1.5" fill="currentColor"/><circle cx="8" cy="11" r="1.5" fill="currentColor"/>
+                            <circle cx="8" cy="19" r="1.5" fill="currentColor"/><circle cx="16" cy="19" r="1.5" fill="currentColor"/>
+                        </svg>
+                        خلية
+                    </button>
+                </div>
+            </div> <!-- End search-container -->
+
+            <div class="features-row slide-up" style="animation-delay: 0.6s;">
+                <div class="feature-chip">
+                    <svg class="hud-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    <span>عرض 3D تفاعلي</span>
+                </div>
+                <div class="feature-chip">
+                    <svg class="hud-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                    <span>معلومات تعليمية</span>
+                </div>
+                <div class="feature-chip">
+                    <svg class="hud-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                    <span>واقع معزز AR</span>
+                </div>
+            </div>
+        </div> <!-- End hero-content -->
+    </section>
+
+    <!-- Viewer Section -->
+    <section id="viewerSection" class="viewer-section hidden">
+        <!-- Top Navigation -->
+        <nav class="viewer-nav">
+            <button id="backBtn" class="nav-btn back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                رجوع
+            </button>
+            <div class="nav-title" id="navTitle">القلب البشري</div>
+            <button id="arBtn" class="nav-btn ar-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                عرض AR
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="viewer-layout">
+            <!-- 3D Viewport -->
+            <div class="viewport-container">
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state">
+                    <div class="loader-container">
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-core"></div>
+                    </div>
+                    <p class="loading-text">جاري تحميل النموذج...</p>
+                </div>
+
+                <model-viewer
+                    id="modelViewer"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="1000"
+                    rotation-per-second="30deg"
+                    shadow-intensity="1"
+                    exposure="1.2"
+                    environment-image="neutral"
+                    ar
+                    ar-modes="webxr scene-viewer quick-look"
+                    ar-scale="auto"
+                    style="width: 100%; height: 100%; background: transparent;"
+                ></model-viewer>
+
+                <!-- Sketchfab Viewer -->
+                <iframe
+                    id="sketchfabViewer"
+                    title="Sketchfab Viewer"
+                    allowfullscreen
+                    mozallowfullscreen="true"
+                    webkitallowfullscreen="true"
+                    allow="autoplay; fullscreen; xr-spatial-tracking"
+                    xr-spatial-tracking
+                    execution-while-out-of-viewport
+                    execution-while-not-rendered
+                    web-share
+                    class="hidden"
+                    style="width: 100%; height: 100%; border: 0;"
+                ></iframe>
+
+                <div class="control-bar">
+                    <span class="hud-instruction">
+                       <svg class="hud-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 8a4 4 0 1 0-8 0v8a4 4 0 1 0 8 0V8Z"/><path d="M12 8v4"/></svg>
+                       سحب للتدوير
+                    </span>
+                    <span class="hud-divider">•</span>
+                    <span class="hud-instruction">
+                       <svg class="hud-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M11 14v.01"/></svg>
+                       تكبير وتصغير
+                    </span>
+                </div>
+            </div>
+
+            <!-- Info Panel -->
+            <div id="infoPanel" class="info-panel hidden">
+                <div class="info-header">
+                    <div class="info-badge">تشريح</div>
+                    <h2 id="organName" class="organ-name">القلب البشري</h2>
+                    <p id="organDesc" class="organ-desc"></p>
+                </div>
+
+                <div class="parts-section">
+                    <h3 class="parts-title">
+                        <svg class="hud-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        أجزاء العضو
+                    </h3>
+                    <div id="partsList" class="parts-list"></div>
+                </div>
+
+                <!-- Fun Facts -->
+                <div class="facts-section">
+                    <h3 class="parts-title">
+                        <svg class="hud-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        معلومات تحليلية
+                    </h3>
+                    <div id="funFact" class="fun-fact-card"></div>
+                </div>
+
+                <!-- Related Suggestions -->
+                <div id="suggestionsSection" class="suggestions-section hidden">
+                    <h3 class="parts-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        مواضيع ذات صلة
+                    </h3>
+                    <div id="suggestionsList" class="suggestion-chips"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/app.js?v=10"></script>
+    <script>
+    // =============================================
+    // MEDICA 3D — Floating Medical Models (Three.js)
+    // Only edge models — never block hero text
+    // =============================================
+    (function() {
+        const canvas = document.getElementById('floating-models');
+        if (!canvas) return;
+
+        function resize() {
+            const w = canvas.parentElement.offsetWidth;
+            const h = canvas.parentElement.offsetHeight;
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x000000, 0);
+
+        const scene = new THREE.Scene();
+        // Wide FOV + far z keeps models from taking over the center
+        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+        camera.position.z = 14;
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ── Colors ────────────────────────────────────
+        const CYAN   = 0x00f2ff;
+        const PURPLE = 0xbc13fe;
+        const GREEN  = 0x39ff14;
+
+        function lineMat(color, opacity = 1) {
+            return new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+        }
+        function wireMat(color, opacity = 0.55) {
+            return new THREE.MeshBasicMaterial({ color, wireframe: true, transparent: true, opacity });
+        }
+
+        // ══════════════════════════════════════════════
+        // MODEL A: DNA DOUBLE HELIX — far RIGHT side
+        // ══════════════════════════════════════════════
+        const dnaGroup = new THREE.Group();
+        dnaGroup.position.set(6.2, 0, -1);  // pushed to right edge
+
+        const strandA = [], strandB = [];
+        const N = 80;
+        for (let i = 0; i < N; i++) {
+            const ang = (i / N) * Math.PI * 8;
+            const y   = (i / N) * 9 - 4.5;
+            const r   = 1.1;
+            strandA.push(new THREE.Vector3(Math.cos(ang) * r, y, Math.sin(ang) * r));
+            strandB.push(new THREE.Vector3(Math.cos(ang + Math.PI) * r, y, Math.sin(ang + Math.PI) * r));
+        }
+
+        dnaGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(strandA), lineMat(CYAN, 0.85)));
+        dnaGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(strandB), lineMat(PURPLE, 0.85)));
+
+        // Cross-rungs every 5 steps
+        for (let i = 0; i < N; i += 5) {
+            dnaGroup.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([strandA[i], strandB[i]]),
+                lineMat(0x00f2ff, 0.3)
+            ));
+        }
+
+        // Bright node spheres at rungs
+        const nCyan   = new THREE.MeshBasicMaterial({ color: CYAN });
+        const nPurple = new THREE.MeshBasicMaterial({ color: PURPLE });
+        for (let i = 0; i < N; i += 8) {
+            const sA = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), nCyan);
+            sA.position.copy(strandA[i]);
+            const sB = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), nPurple);
+            sB.position.copy(strandB[i]);
+            dnaGroup.add(sA, sB);
+        }
+        scene.add(dnaGroup);
+
+        // ══════════════════════════════════════════════
+        // MODEL B: ATOM / MOLECULE — far LEFT side
+        // Represents the cellular/atomic level of anatomy
+        // ══════════════════════════════════════════════
+        const atomGroup = new THREE.Group();
+        atomGroup.position.set(-6.2, 0, -1); // pushed to left edge
+
+        // Nucleus (glowing core)
+        const nucleus = new THREE.Mesh(
+            new THREE.SphereGeometry(0.55, 16, 16),
+            new THREE.MeshBasicMaterial({ color: CYAN })
+        );
+        atomGroup.add(nucleus);
+
+        // Nucleus glow ring
+        const glow = new THREE.Mesh(
+            new THREE.SphereGeometry(0.75, 16, 16),
+            new THREE.MeshBasicMaterial({ color: CYAN, wireframe: true, transparent: true, opacity: 0.15 })
+        );
+        atomGroup.add(glow);
+
+        // 3 Electron orbits at different tilts
+        const orbits = [];
+        const orbitAngles = [
+            { rx: 0,    ry: 0,    rz: 0 },
+            { rx: Math.PI / 3, ry: 0, rz: 0 },
+            { rx: 0,    ry: Math.PI / 4, rz: Math.PI / 3 },
+        ];
+        const orbitColors = [CYAN, PURPLE, GREEN];
+        orbitAngles.forEach((rot, idx) => {
+            const pts = [];
+            for (let a = 0; a <= 128; a++) {
+                const angle = (a / 128) * Math.PI * 2;
+                pts.push(new THREE.Vector3(Math.cos(angle) * 2.2, Math.sin(angle) * 2.2, 0));
+            }
+            const orbitGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            const orbitLine = new THREE.Line(orbitGeo, lineMat(orbitColors[idx], 0.55));
+            orbitLine.rotation.set(rot.rx, rot.ry, rot.rz);
+            atomGroup.add(orbitLine);
+
+            // Electron dot on each orbit
+            const electron = new THREE.Mesh(
+                new THREE.SphereGeometry(0.16, 8, 8),
+                new THREE.MeshBasicMaterial({ color: orbitColors[idx] })
+            );
+            orbits.push({ mesh: electron, orbitRot: rot, index: idx });
+            atomGroup.add(electron);
+        });
+
+        scene.add(atomGroup);
+
+        // ── Ambient floating particles ──────────────────
+        const positions = [];
+        for (let i = 0; i < 200; i++) {
+            positions.push(
+                (Math.random() - 0.5) * 24,
+                (Math.random() - 0.5) * 14,
+                (Math.random() - 0.5) * 6
+            );
+        }
+        const particleGeo = new THREE.BufferGeometry();
+        particleGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        scene.add(new THREE.Points(particleGeo, new THREE.PointsMaterial({ color: CYAN, size: 0.04, transparent: true, opacity: 0.3 })));
+
+        // ── Animation Loop ──────────────────────────────
+        let t = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            t += 0.008;
+
+            // DNA: slow spin + gentle bob
+            dnaGroup.rotation.y += 0.007;
+            dnaGroup.position.y = Math.sin(t * 0.6) * 0.7;
+
+            // Atom nucleus gentle pulse
+            const pulse = 1 + Math.sin(t * 3) * 0.06;
+            glow.scale.set(pulse, pulse, pulse);
+            atomGroup.rotation.y += 0.004;
+            atomGroup.position.y = Math.sin(t * 0.7 + 1.5) * 0.7;
+
+            // Orbit electrons around nucleus
+            orbits.forEach(({ mesh, orbitRot, index }) => {
+                const speed = 0.5 + index * 0.3;
+                const angle = t * speed;
+                // Compute position on a tilted circle
+                const cosA = Math.cos(angle) * 2.2;
+                const sinA = Math.sin(angle) * 2.2;
+                const basePos = new THREE.Vector3(cosA, sinA, 0);
+                const euler = new THREE.Euler(orbitRot.rx, orbitRot.ry, orbitRot.rz);
+                basePos.applyEuler(euler);
+                mesh.position.copy(basePos);
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    })();
+    </script>
+
+</body>
+</html>
