@@ -184,7 +184,7 @@ function showSelectionScreen(data) {
         const card = document.createElement('div');
         card.className = 'selection-card';
         card.innerHTML = `
-            <img src="${cand.thumbnail || 'https://via.placeholder.com/300x200?text=No+Preview'}" alt="${cand.name}">
+            <div class="card-image-bg" style="background-image: url('${cand.thumbnail || 'https://via.placeholder.com/300x200?text=No+Preview'}');"></div>
             <div class="card-info">
                 <div style="font-size: 0.7rem; color: var(--primary); opacity: 0.5; margin-bottom: 5px;">DATA_STREAM: SUCCESS</div>
                 <h3>${cand.name}</h3>
